@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HonaiBot - Penerjemah Bahasa Lani</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .honai-bg {
+            background-image: url('image/bg.png');
+            background-size: cover;
+            background-position: center;
+        }
+        .typing::after {
+            content: '...';
+            animation: typing 1.5s infinite;
+        }
+        @keyframes typing {
+            0% { content: '.'; }
+            33% { content: '..'; }
+            66% { content: '...'; }
+        }
+    </style>
+</head>
+<body class="bg-yellow-50">
+    <div class="container mx-auto p-4 max-w-2xl">
+        <!-- Header dengan Filosofi Honai -->
+        <header class="text-center mb-6">
+            <div class="w-20 h-20 mx-auto bg-yellow-900 rounded-full flex items-center justify-center mb-3">
+                <span class="text-4xl">🏠</span>
+            </div>
+            <h1 class="text-3xl font-bold text-yellow-800">HONAIBOT</h1>
+            <p class="text-yellow-600">Bahasa Lani</p>
+            <div class="flex justify-center mt-2">
+                <span class="bg-yellow-200 text-yellow-800 text-xs px-3 py-1 rounded-full">
+                    <span id="status">🔴 Mode Offline</span>
+                </span>
+            </div>
+        </header>
+
+        <!-- Chat Container -->
+        <div class="honai-bg rounded-xl shadow-lg overflow-hidden" style="height: 65vh;">
+            <!-- Chat Header -->
+            <div class="bg-yellow-800 text-white p-3 flex items-center">
+                <div class="w-10 h-10 rounded-full bg-yellow-700 flex items-center justify-center mr-2">
+                    <span>👨</span>
+                </div>
+                <div class="flex-1">
+                    <h2 class="font-bold">Laki-Laki Honai</h2>
+                    <p class="text-xs opacity-90">Penerjemah Bahasa Lani-Indonesia</p>
+                </div>
+                <button onclick="toggleTheme()" class="bg-yellow-700 hover:bg-yellow-600 text-white p-1 rounded-full">
+                    <span id="theme-icon">🌙</span>
+                </button>
+            </div>
+
+            <!-- Messages Area -->
+            <div id="chat-messages" class="p-4 overflow-y-auto" style="height: calc(100% - 130px);">
+                <div class="bg-yellow-100 text-yellow-900 p-3 rounded-lg rounded-tl-none max-w-[80%] mb-3">
+                    <p>Yau! Nama sa Laki-Laki Honai.</p>
+                    <p class="mt-1">Sa bisa bantu terjemahkan kata:</p>
+                    <p class="text-xs mt-2">
+                        <span class="font-bold">Indonesia</span> → <span class="font-bold">Lani</span> atau sebaliknya
+                    </p>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="bg-yellow-900 bg-opacity-90 p-3">
+                <!-- Quick Actions -->
+                <div id="quick-actions" class="flex flex-wrap gap-1 mb-2">
+                    <button onclick="quickAsk('Binamen')" class="text-xs bg-yellow-700 hover:bg-yellow-600 text-white px-2 py-1 rounded-full">Binamen</button>
+                    <button onclick="quickAsk('Honaik')" class="text-xs bg-yellow-700 hover:bg-yellow-600 text-white px-2 py-1 rounded-full">Honaik</button>
+                    <button onclick="quickAsk('Nogoba')" class="text-xs bg-yellow-700 hover:bg-yellow-600 text-white px-2 py-1 rounded-full">Nogoba</button>
+                    <button onclick="quickAsk('Nagalo')" class="text-xs bg-yellow-700 hover:bg-yellow-600 text-white px-2 py-1 rounded-full">Nagalo</button>
+                </div>
+                
+                <div class="flex">
+                    <input id="user-input" type="text" placeholder="Tulis kata dalam Bahasa Indonesia atau Lani..." 
+                           class="flex-1 border border-yellow-300 rounded-l-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                    <button onclick="sendMessage()" class="bg-yellow-600 hover:bg-yellow-500 text-white px-4 py-2 rounded-r-lg flex items-center">
+                        <span class="mr-1">Kirim</span> ↗
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kamus Mini -->
+        <div class="mt-6 bg-white p-4 rounded-xl shadow">
+            <h3 class="font-bold text-yellow-800 mb-3 flex items-center">
+                <span class="bg-yellow-100 p-1 rounded-full mr-2">📖</span>
+                Kamus Bahasa Lani-Indonesia
+            </h3>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
+                <div class="bg-yellow-50 p-2 rounded"><span class="font-bold">Binamen:</span> Makan</div>
+                <div class="bg-yellow-50 p-2 rounded"><span class="font-bold">Honaik:</span> Rumah Tradisional</div>
+                <div class="bg-yellow-50 p-2 rounded"><span class="font-bold">Nogoba:</span> Ayah</div>
+                <div class="bg-yellow-50 p-2 rounded"><span class="font-bold">Nagalo:</span> Ibu</div>
+                <div class="bg-yellow-50 p-2 rounded"><span class="font-bold">Moandi:</span> Panas</div>
+                <div class="bg-yellow-50 p-2 rounded"><span class="font-bold">Dingin:</span> Dingin</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Database lengkap kosakata Lani-Indonesia (Offline)
+        const kamusHonai = {
+            // Kata Dasar
+            "binamen": { arti: "makan", contoh: "Binamen ap = Makan nasi" },
+            "honaik": { arti: "rumah tradisional", contoh: "Honaik wob = Rumah besar" },
+            "nogoba": { arti: "ayah", contoh: "Nogoba ndumuk = Ayah minum" },
+            "nagalo": { arti: "ibu", contoh: "Nagalo wene = Ibu makan ubi" },
+            "yii": { arti: "air", contoh: "Yii meki = Nasi panas" },
+            "bi": { arti: "ubi", contoh: "Bi meki = Ubi panas" },
+            
+            // Frasa Umum
+            "ulla": { arti: "kubodok/selamat datang", contoh: "Ulla, aik! = Halo, ayah!" },
+            "kaonak": { arti: "terima kasih", contoh: "Kaonak ebe = Terima kasih ibu" },
+            "moandi": { arti: "panas", contoh: "Moandi meki = Cuaca panas" },
+            "tugwi": { arti: "dingin", contoh: "Tugwi meki = Cuaca dingin" },
+            
+            // Alam
+            "igame": { arti: "hutan", contoh: "Ingame wob = Hutan besar" },
+            "kunume": { arti: "homei", contoh: "Honai wob = Rumah laki laki" },
+            "kopi negge": { arti: "minum kopi", contoh: "Kopi Nengge = Minum Kopi" }
+        };
+
+        // Fungsi utama
+        function sendMessage() {
+            const input = document.getElementById('user-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            addMessage(message, 'user');
+            input.value = '';
+            
+            // Tampilkan indikator typing
+            const typingIndicator = document.createElement('div');
+            typingIndicator.id = 'typing';
+            typingIndicator.className = 'bg-yellow-100 text-yellow-900 p-3 rounded-lg rounded-tl-none max-w-[80%] mb-3 typing';
+            typingIndicator.textContent = 'Laki-Laki Honai sedang mencari...';
+            document.getElementById('chat-messages').appendChild(typingIndicator);
+            scrollChat();
+            
+            setTimeout(() => {
+                // Hapus indikator typing
+                document.getElementById('typing').remove();
+                
+                const response = processMessage(message);
+                addMessage(response, 'bot');
+            }, 800);
+        }
+
+        function quickAsk(word) {
+            document.getElementById('user-input').value = word;
+            sendMessage();
+        }
+
+        function processMessage(message) {
+            message = message.toLowerCase().trim();
+            
+            // Cek apakah kata ada di kamus
+            if (kamusHonai[message]) {
+                const entry = kamusHonai[message];
+                return `"${capitalize(message)}" dalam Bahasa ${message in kamusHonai ? 'Lani' : 'Indonesia'} artinya:\n"${capitalize(entry.arti)}"\n\nContoh:\n${entry.contoh}`;
+            }
+            
+            // Cek terjemahan terbalik (Indonesia ke Lani)
+            const reversedEntry = Object.entries(kamusHonai).find(([key, val]) => val.arti === message);
+            if (reversedEntry) {
+                return `"${capitalize(message)}" dalam Bahasa Lani adalah:\n"${capitalize(reversedEntry[0])}"\n\nContoh:\n${reversedEntry[1].contoh}`;
+            }
+            
+            return `Maaf, sa belum tahu arti "${capitalize(message)}".\nCoba tanya kata lain seperti: Honai, Honai, Aik, Ebe`;
+        }
+
+        function addMessage(text, sender) {
+            const chat = document.getElementById('chat-messages');
+            const msgDiv = document.createElement('div');
+            
+            if (sender === 'user') {
+                msgDiv.className = 'ml-auto bg-yellow-600 text-white p-3 rounded-lg rounded-tr-none max-w-[80%] mb-3';
+            } else {
+                msgDiv.className = 'bg-yellow-100 text-yellow-900 p-3 rounded-lg rounded-tl-none max-w-[80%] mb-3';
+                text = text.replace(/\n/g, '<br>');
+            }
+            
+            msgDiv.innerHTML = `<p>${text}</p>`;
+            chat.appendChild(msgDiv);
+            scrollChat();
+        }
+
+        function scrollChat() {
+            const chat = document.getElementById('chat-messages');
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function capitalize(str) {
+            return str.split(' ').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1)
+            ).join(' ');
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('bg-gray-900');
+            document.body.classList.toggle('text-white');
+            document.body.classList.toggle('bg-yellow-50');
+            
+            const icon = document.getElementById('theme-icon');
+            icon.textContent = icon.textContent === '🌙' ? '☀️' : '🌙';
+        }
+
+        // Event Listeners
+        document.getElementById('user-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+    </script>
+</body>
+</html>
